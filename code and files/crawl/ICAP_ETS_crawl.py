@@ -1,143 +1,260 @@
 import time
-
+import os
+import random
+import re
 from lxml import etree
 import requests
 from fake_useragent import UserAgent
 import json
 import csv
 
+# Configuration: Only extract policies from this year onwards
+MIN_YEAR = 2021
 
-def get_page(url):
-    ua = UserAgent()
-    usr_ag = ua.random
-    headers = {'User-Agent': usr_ag}
-    # 'Cookie': 'qgqp_b_id=1cfcb377c049ff6efe08918be2359014; st_si=56864813917721; st_asi=delete; cdcfh=6793013397600842%2C3118213442497792; st_pvi=81312807735168; st_sp=2022-12-12%2023%3A25%3A14; st_inirUrl=http%3A%2F%2Fguba.eastmoney.com%2F; st_sn=5; st_psi=20221213123300162-119101302791-8364966167'}
-    response = requests.get(url, headers=headers, timeout=1.5)
-    print(response.status_code)
-    response.encoding = 'utf-8'
-    response = response.text
-    return response
+# Create output directory if it doesn't exist
+output_dir = os.path.join(os.getcwd(), "data_new")
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+output_file = os.path.join(output_dir, "ICAP_ETS.csv")
 
 
-url_1 = 'https://icapcarbonaction.com/en/json/maplist'
-res_1 = get_page(url_1)
-js_data = json.loads(res_1)
-print(js_data)
-id_ls = []
-for j_1 in js_data:
-    id_ls.append(j_1['id'])
-print(id_ls)
-
-e = open("/home/zhhuang/climate_policy_paper/code/files/ICAP_ETS.csv", 'a+', encoding='utf-8-sig', newline='')
-csv_writer = csv.writer(e)
-csv_writer.writerow(
-    ['Policy', 'Year', 'Country', 'Policy_Content', 'URL', 'Scope', 'Allocation', 'Sectoral coverage', 'GHGs covered',
-     'Offsets credits', 'Cap', 'Source'])
-e.close()
-print(len(id_ls))
-for single_id in id_ls:
-    try:
-        url_2 = r'https://icapcarbonaction.com/en/ets_system/{}'.format(single_id)
-        res_2 = get_page(url_2)
-        # print(res_2)
-        # time.sleep(1111)
-        data_2 = etree.HTML(res_2)
-        # Policy
+def get_page(url, max_retries=3):
+    """Get page content with retry logic and better error handling"""
+    for attempt in range(max_retries):
         try:
-            Policy = data_2.xpath('//h1[@class="ets-caption"]/text()')[0]
+            ua = UserAgent()
+            usr_ag = ua.random
+            headers = {'User-Agent': usr_ag}
+            
+            # Increase timeout and add random delay
+            response = requests.get(url, headers=headers, timeout=10)
+            print(f"Status: {response.status_code}")
+            response.encoding = 'utf-8'
+            
+            # Add random delay between requests (1-3 seconds)
+            time.sleep(random.uniform(1, 3))
+            
+            return response.text
+            
+        except requests.exceptions.ReadTimeout:
+            print(f"⏰ Timeout on attempt {attempt + 1}/{max_retries} for {url}")
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 5  # Progressive backoff: 5, 10, 15 seconds
+                print(f"Waiting {wait_time} seconds before retry...")
+                time.sleep(wait_time)
+            else:
+                print(f"❌ Failed to fetch {url} after {max_retries} attempts")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Request error on attempt {attempt + 1}/{max_retries}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep((attempt + 1) * 2)
+            else:
+                return None
+    
+    return None
+
+
+print(f"🚀 Starting ICAP ETS crawler")
+print(f"📂 Output file: {output_file}")
+print(f"📅 Filtering for policies from {MIN_YEAR} onwards")
+print(f"🏭 Source: International Carbon Action Partnership (ICAP)")
+print("=" * 60)
+
+# Keep track of progress
+saved_count = 0
+skipped_count = 0
+
+
+# Fetch the list of ETS systems
+print("🔍 Fetching list of ETS systems...")
+url_1 = 'https://icapcarbonaction.com/en/json/maplist'
+
+try:
+    res_1 = get_page(url_1)
+    if res_1 is None:
+        print("❌ Could not fetch ETS list, exiting...")
+        exit(1)
+        
+    js_data = json.loads(res_1)
+    print(f"✅ Found {len(js_data)} ETS systems")
+    
+    # Extract system IDs
+    id_ls = []
+    for j_1 in js_data:
+        if 'id' in j_1:
+            id_ls.append(j_1['id'])
+            
+    print(f"📊 Processing {len(id_ls)} ETS systems")
+    
+except Exception as e:
+    print(f"❌ Error fetching ETS list: {e}")
+    exit(1)
+
+# Check if file exists, if not create with headers
+if not os.path.exists(output_file):
+    with open(output_file, 'w', encoding='utf-8-sig', newline='') as e:
+        csv_writer = csv.writer(e)
+        csv_writer.writerow(['Policy', 'Year', 'Country', 'Policy_Content', 'URL', 'Scope', 'Allocation', 'Sectoral coverage', 'GHGs covered', 'Offsets credits', 'Cap', 'Source'])
+# Process each ETS system
+for system_index, single_id in enumerate(id_ls):
+    try:
+        print(f'=========== 🏭 Processing ETS {system_index + 1}/{len(id_ls)} ===========')
+        print(f'System ID: {single_id}')
+        
+        url_2 = f'https://icapcarbonaction.com/en/ets_system/{single_id}'
+        
+        res_2 = get_page(url_2)
+        if res_2 is None:
+            print(f"⚠️  Skipping ETS system {single_id} due to network error")
+            continue
+            
+        data_2 = etree.HTML(res_2)
+        
+        # Extract Policy name
+        try:
+            Policy = data_2.xpath('//h1[@class="ets-caption"]/text()')[0].strip()
         except:
             Policy = ''
-        # Year
+            
+        if not Policy:
+            print("⚠️  No ETS system name found, skipping...")
+            continue
+            
+        print(f"🏭 ETS System: {Policy}")
+        
+        # Extract Year (start of operation)
         try:
-            Year = data_2.xpath(
-                '//div[@class="field field--label-above field--type-integer field-start-operation-year"]/div[2]/text()')[
-                0].replace("\n", ' ').strip()
+            year_elements = data_2.xpath('//div[@class="field field--label-above field--type-integer field-start-operation-year"]/div[2]/text()')
+            if year_elements:
+                Year = year_elements[0].replace("\n", ' ').strip()
+            else:
+                Year = ''
         except:
             Year = ''
-        # Country
+            
+        print(f"📅 Start Year: {Year}")
+        
+        # Extract Country/Region
         try:
-            Country = data_2.xpath(
-                '//div[@class="field field--label-above field--type-entity_reference field-regions"]/div[2]/div[@class="field__content"]/text()')[
-                0].replace("\n", ' ').strip()
+            country_elements = data_2.xpath('//div[@class="field field--label-above field--type-entity_reference field-regions"]/div[2]/div[@class="field__content"]/text()')
+            if country_elements:
+                Country = country_elements[0].replace("\n", ' ').strip()
+            else:
+                Country = ''
         except:
             Country = ''
-        # Policy_Content
+        
+        # Extract Policy Content (summary)
         try:
-            Policy_Content_ls = data_2.xpath(
-                '//div[@class="field field--label-above field--type-text_long field-summary-short dropdown-menu hide-frame"]/div[@class="dropdown-menu__frame"]//text()')
+            Policy_Content_ls = data_2.xpath('//div[@class="field field--label-above field--type-text_long field-summary-short dropdown-menu hide-frame"]/div[@class="dropdown-menu__frame"]//text()')
             Policy_Content = ''
             for single_Policy in Policy_Content_ls:
-                print(single_Policy)
-                if single_Policy != '':
-                    Policy_Content += single_Policy
-            Policy_Content = Policy_Content.replace("\n", ' ').strip()
+                if single_Policy.strip():
+                    Policy_Content += single_Policy.strip() + ' '
+            Policy_Content = Policy_Content.strip()
         except:
             Policy_Content = ''
-        # url
+        
+        # URL
         URL = url_2
-        # Scope
+        
+        # Determine Scope based on policy name
         if '-' in Policy:
             Scope = 'SubNational'
-            Country = Policy.split('-')[0].strip()
+            # Extract country from policy name if not already extracted
+            if not Country:
+                Country = Policy.split('-')[0].strip()
         else:
             Scope = 'National'
-        # Allocation
+        
+        print(f"🌍 Country: {Country}, 📊 Scope: {Scope}")
+        
+        # Extract Allocation method
         try:
-            Allocation = data_2.xpath(
-                '//div[@class="field field--label-above field--type-string field-allowance-alloc-summary"]/div[2]/text()')[
-                0]
-            Allocation = Allocation.replace("\n", ' ').strip()
+            allocation_elements = data_2.xpath('//div[@class="field field--label-above field--type-string field-allowance-alloc-summary"]/div[2]/text()')
+            if allocation_elements:
+                Allocation = allocation_elements[0].replace("\n", ' ').strip()
+            else:
+                Allocation = ''
         except:
             Allocation = ''
-        # Sectoral coverage
+        
+        # Extract Sectoral coverage
         try:
-            Sectoral_coverage_ls = data_2.xpath(
-                '//div[@class="field field--label-above field--type-entity_reference field-sectoral-coverage"]/div[2]//div[@class="field field--label-hidden field--type-string field-name"]/div/text()')
-            # Sectoral_coverage_txt = ''
-            # print(Sectoral_coverage_ls)
-            Sectoral_coverage_txt = ','.join(Sectoral_coverage_ls).replace('\n', '').replace(' ', '')
-            # print(Sectoral_coverage_txt)
-            # for single_Sectoral in Sectoral_coverage_ls:
-            #     print(single_Sectoral)
-            #     single_Sectoral = str(single_Sectoral).replace('\n', '').replace(' ', '')
-            #     if single_Sectoral != Sectoral_coverage_ls[-1]:
-            #         Sectoral_coverage_txt += single_Sectoral + ','
-            #     else:
-            #         Sectoral_coverage_txt += single_Sectoral
+            sectoral_elements = data_2.xpath('//div[@class="field field--label-above field--type-entity_reference field-sectoral-coverage"]/div[2]//div[@class="field field--label-hidden field--type-string field-name"]/div/text()')
+            if sectoral_elements:
+                Sectoral_coverage_txt = ', '.join([s.strip() for s in sectoral_elements if s.strip()])
+            else:
+                Sectoral_coverage_txt = ''
         except:
             Sectoral_coverage_txt = ''
-        # GHGs covered
+        
+        # Extract GHGs covered
         try:
-            GHGs_covered = data_2.xpath(
-                '//div[@class="field field--label-above field--type-string_long field-ghgs-covered"]/div[2]/text()')[0]
-            GHGs_covered = GHGs_covered.replace("\n", ' ').strip()
+            ghg_elements = data_2.xpath('//div[@class="field field--label-above field--type-string_long field-ghgs-covered"]/div[2]/text()')
+            if ghg_elements:
+                GHGs_covered = ghg_elements[0].replace("\n", ' ').strip()
+            else:
+                GHGs_covered = ''
         except:
             GHGs_covered = ''
-        # Offsets and credits
+        
+        # Extract Offsets and credits
         try:
-            Offsets_credits = data_2.xpath(
-                '//div[@class="field field--label-above field--type-string field-offsets-credits-summary"]/div[2]/text()')[
-                0]
-            Offsets_credits = Offsets_credits.replace("\n", ' ').strip()
+            offset_elements = data_2.xpath('//div[@class="field field--label-above field--type-string field-offsets-credits-summary"]/div[2]/text()')
+            if offset_elements:
+                Offsets_credits = offset_elements[0].replace("\n", ' ').strip()
+            else:
+                Offsets_credits = ''
         except:
             Offsets_credits = ''
-        # Cap
+        
+        # Extract Cap information
         try:
-            Cap = \
-                data_2.xpath(
-                    '//div[@class="field field--label-above field--type-string field-cap-summary"]/div[2]/text()')[
-                    0]
-            Cap = Cap.replace("\n", ' ').strip()
+            cap_elements = data_2.xpath('//div[@class="field field--label-above field--type-string field-cap-summary"]/div[2]/text()')
+            if cap_elements:
+                Cap = cap_elements[0].replace("\n", ' ').strip()
+            else:
+                Cap = ''
         except:
             Cap = ''
-        if Policy != '':
-            e = open("/home/zhhuang/climate_policy_paper/code/files/ICAP_ETS.csv", 'a+', encoding='utf-8-sig',
-                     newline='')
-            csv_writer = csv.writer(e)
-            csv_writer.writerow(
-                [Policy, Year, Country, Policy_Content, URL, Scope, Allocation, Sectoral_coverage_txt, GHGs_covered,
-                 Offsets_credits, Cap, 'ICAP'])
-            e.close()
-            print(URL)
-    except:
+        
+        # Apply year filter and save
+        try:
+            year_int = int(Year) if Year.isdigit() else 0
+            if year_int >= MIN_YEAR or Year == '':  # Include ETS systems with no year specified
+                with open(output_file, 'a', encoding='utf-8-sig', newline='') as e:
+                    csv_writer = csv.writer(e)
+                    csv_writer.writerow([Policy, Year, Country, Policy_Content, URL, Scope, Allocation, Sectoral_coverage_txt, GHGs_covered, Offsets_credits, Cap, 'ICAP'])
+                saved_count += 1
+                print(f"✅ Saved: {Policy} ({Year})")
+            else:
+                skipped_count += 1
+                print(f"❌ Skipped (before {MIN_YEAR}): {Policy} ({Year})")
+        except ValueError:
+            # If year is not a valid integer, save it anyway
+            with open(output_file, 'a', encoding='utf-8-sig', newline='') as e:
+                csv_writer = csv.writer(e)
+                csv_writer.writerow([Policy, Year, Country, Policy_Content, URL, Scope, Allocation, Sectoral_coverage_txt, GHGs_covered, Offsets_credits, Cap, 'ICAP'])
+            saved_count += 1
+            print(f"⚠️  Saved (non-numeric year): {Policy} ({Year})")
+        
+        # Progress report every 10 systems
+        if (system_index + 1) % 10 == 0:
+            print(f"📊 Progress Report - System {system_index + 1}/{len(id_ls)}")
+            print(f"   💾 Saved: {saved_count} ETS systems")
+            print(f"   ⏭️  Skipped: {skipped_count} ETS systems")
+            print("=" * 40)
+            
+    except Exception as e:
+        print(f"❌ Error processing ETS system {single_id}: {e}")
         continue
+
+print(f"\n🎉 ICAP ETS crawling completed!")
+print(f"📊 Final Statistics:")
+print(f"   💾 Total saved: {saved_count} ETS systems")
+print(f"   ⏭️  Total skipped: {skipped_count} ETS systems")
+print(f"📂 Output saved to: {output_file}")

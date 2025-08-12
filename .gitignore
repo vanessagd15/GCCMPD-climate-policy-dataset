@@ -1,12 +1,363 @@
-/else_files
-/policy paper and supplement
-/paper_images
+# =============================================================================
+# CLIMATE POLICY CRAWLER PROJECT .GITIGNORE
+# =============================================================================
+# This file prevents large data files, binaries, and temporary files from 
+# being committed to the repository, keeping it clean and performant.
+
+# =============================================================================
+# PROJECT-SPECIFIC EXCLUSIONS
+# =============================================================================
+
+# Large project directories
+/else_files/
+/policy paper and supplement/
+/paper_images/
+
+# Model and data directories
+*/model_save/
+/models/
+/model_files/
+/checkpoints/
+
+# Data directories (crawled data can be very large)
+/data/
+/data_new/
+/data_old/
+/data_backup/
+/raw_data/
+/processed_data/
+/policy_db*/
+/crawl_results/
+/output/
+/results/
+
+# Specific project files
 ./bm25_plot.py
-./*.json
-./*.jsonl
 /code and files/bm25_move_duplicate_result_test.xlsx
 /code and files/bm25_move_duplicate_test.py
 /code and files/bm25_parameter_grid_search.py
 /code and files/iea_cp_cclw_result_test.xlsx
-*/model_save/
-/models/
+
+# =============================================================================
+# DATA FILES AND FORMATS
+# =============================================================================
+
+# Large data files
+*.csv
+*.xlsx
+*.xls
+*.tsv
+*.parquet
+*.feather
+*.hdf5
+*.h5
+*.hdf
+*.pickle
+*.pkl
+*.dat
+*.data
+
+# JSON data files (can be large)
+*.json
+*.jsonl
+*.ndjson
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+*.accdb
+
+# Archive files
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+*.tar.bz2
+*.gz
+
+# =============================================================================
+# BINARY AND EXECUTABLE FILES
+# =============================================================================
+
+# Windows executables and libraries
+*.exe
+*.dll
+*.msi
+*.cab
+*.sys
+*.ocx
+*.lib
+*.a
+*.so.*
+*.dylib
+
+# Static and shared libraries (all platforms)
+*.lib        # Windows static library
+*.a          # Unix/Linux static library  
+*.so         # Linux shared library
+*.so.*       # Linux shared library with version
+*.dylib      # macOS shared library
+*.framework/ # macOS framework
+
+# Library directories
+lib/
+libs/
+library/
+libraries/
+bin/
+binaries/
+
+# Platform-specific library files
+# Windows
+*.pdb        # Program database
+*.idb        # Incremental database
+*.exp        # Export file
+*.ilk        # Incremental linker file
+*.manifest   # Application manifest
+
+# Linux/Unix
+*.o          # Object files
+*.obj        # Object files (Windows)
+
+# Chrome/WebDriver executables and related
+chromedriver*
+geckodriver*
+msedgedriver*
+operadriver*
+*.webdriver
+
+# Native extensions and compiled modules
+*.pyd        # Python extension (Windows)
+*.so         # Python extension (Linux)
+*.dylib      # Python extension (macOS)
+
+# Python compiled files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# =============================================================================
+# TEMPORARY AND CACHE FILES
+# =============================================================================
+
+# Python cache
+.pytest_cache/
+.coverage
+.tox/
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+ENV/
+env.bak/
+venv.bak/
+conda_env/
+
+# =============================================================================
+# LOG AND REPORT FILES
+# =============================================================================
+
+# Log files
+*.log
+*.log.*
+logs/
+log/
+
+# Crawler reports and outputs
+crawler_execution_report_*.json
+execution_report_*.json
+crawl_report_*.json
+error_log_*.txt
+
+# =============================================================================
+# SYSTEM AND TEMPORARY FILES
+# =============================================================================
+
+# Windows system files
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Linux system files
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# =============================================================================
+# DEVELOPMENT AND BUILD FILES
+# =============================================================================
+
+# Node.js (if using any JS tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Documentation builds
+docs/_build/
+site/
+
+# =============================================================================
+# CONFIGURATION AND SECRETS
+# =============================================================================
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+config.ini
+secrets.json
+credentials.json
+api_keys.txt
+
+# Database connection strings
+database.ini
+db_config.py
+
+# =============================================================================
+# SELENIUM AND BROWSER DATA
+# =============================================================================
+
+# Browser profiles and cache
+browser_profile/
+chrome_profile/
+firefox_profile/
+user_data_dir/
+
+# Downloaded files from browsers
+downloads/
+Downloads/
+
+# =============================================================================
+# MACHINE LEARNING AND AI FILES
+# =============================================================================
+
+# Model weights and checkpoints
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+*.h5
+*.hdf5
+*.weights
+
+# TensorFlow files
+*.pb
+*.meta
+*.index
+*.data-*
+checkpoint
+
+# PyTorch files
+*.pth.tar
+*.state_dict
+
+# =============================================================================
+# RESEARCH AND ANALYSIS FILES
+# =============================================================================
+
+# Large research datasets
+dataset/
+datasets/
+corpus/
+embeddings/
+
+# Analysis outputs
+plots/
+figures/
+charts/
+visualizations/
+
+# Experiment results
+experiments/
+runs/
+trials/
+
+# =============================================================================
+# ALLOW IMPORTANT FILES (OVERRIDE EXCLUSIONS)
+# =============================================================================
+
+# Keep important documentation
+!README.md
+!LICENSE
+!requirements.txt
+!environment.yml
+!climatepolicy.yaml
+!*.py
+!*.md
+
+# Keep small example/sample data files
+!sample_data/
+!examples/
+!test_data/
+
+# Keep configuration templates
+!config_template.*
+!.env.example
+!settings_example.*
+
+# =============================================================================
+# FINAL NOTES
+# =============================================================================
+# This gitignore is designed to:
+# 1. Prevent large data files from being committed
+# 2. Exclude system-specific files and binaries
+# 3. Keep the repository clean and fast to clone
+# 4. Maintain security by excluding credentials
+# 5. Allow important code and documentation files
+#
+# To add a specific file back, use: git add -f filename
+# To check what's being ignored: git status --ignored
