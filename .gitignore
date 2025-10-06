@@ -21,7 +21,7 @@
 
 # Data directories (crawled data can be very large)
 /data/
-/data_new/
+#/data_new/
 /data_old/
 /data_backup/
 /raw_data/
@@ -30,6 +30,7 @@
 /crawl_results/
 /output/
 /results/
+!data_new/
 
 # Specific project files
 ./bm25_plot.py
@@ -350,7 +351,7 @@ trials/
 !settings_example.*
 
 # For the updated version 
-!data_new/
+
 
 
 
