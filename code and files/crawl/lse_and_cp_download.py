@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+"""
+LSE Climate Change Laws Database Access Information
+==================================================
+
+IMPORTANT: As of 2025, the LSE Climate Change Laws of the World database 
+no longer provides direct CSV downloads. Access now requires form submission.
+
+Current process:
+1. Visit: https://form.jotform.com/233131638610347
+2. Fill out the data request form
+3. Receive download link via email
+
+This script provides alternative data sources and instructions for accessing 
+the LSE database properly.
+"""
+
 import requests
 import shutil
 import os
@@ -18,6 +35,28 @@ output_dir.mkdir(exist_ok=True)
 # Global counters for tracking
 downloaded_count = 0
 failed_count = 0
+
+
+def print_lse_access_instructions():
+    """Print instructions for accessing LSE Climate Laws database"""
+    print("📋 LSE CLIMATE CHANGE LAWS DATABASE ACCESS")
+    print("=" * 60)
+    print("🔒 The LSE database now requires form-based access (no direct downloads)")
+    print()
+    print("📝 To access the data:")
+    print("   1. Visit: https://form.jotform.com/233131638610347")
+    print("   2. Fill out the data request form with:")
+    print("      • Your contact information")
+    print("      • Research purpose/use case")
+    print("      • Preferred data format (CSV)")
+    print("   3. Submit form and wait for email with download link")
+    print()
+    print("⏰ Expected response time: 1-3 business days")
+    print("📧 Contact: support@climatepolicyradar.org for issues")
+    print()
+    print("🌐 Database website: https://climate-laws.org/")
+    print("📊 Contains: ~1,393 laws + ~3,622 policies from 196+ countries")
+    print("=" * 60)
 
 
 def download_source(url, output_path, chunk_size=CHUNK_SIZE):
@@ -94,67 +133,93 @@ def download_source(url, output_path, chunk_size=CHUNK_SIZE):
     return False
 
 
+def get_alternative_climate_databases():
+    """Get list of alternative climate policy databases with direct access"""
+    return [
+        {
+            'url': 'https://climatepolicyinitiative.org/wp-content/uploads/2021/10/Global-Landscape-of-Climate-Finance-2021.csv',
+            'filename': 'climate_policy_initiative_finance.csv',
+            'description': 'Climate Policy Initiative - Global Finance Data',
+            'active': False  # Check if URL is active
+        },
+        # Add more alternative sources here as they become available
+    ]
+
+
 def main():
-    """Main function to download climate policy databases"""
+    """Main function providing LSE access info and alternative downloads"""
+    global downloaded_count, failed_count
+    
     print("=" * 60)
-    print("🌍 LSE & Climate Policy Database Downloader")
-    print("🎯 Enhanced version with robust error handling")
+    print("🌍 Climate Policy Database Access Tool")
+    print("🎯 Enhanced version with current access methods")
     print("=" * 60)
     print(f"📂 Output directory: {output_dir.absolute()}")
     print(f"📅 Data filtering: {MIN_YEAR} onwards (applied during processing)")
     
-    # URLs and corresponding filenames
-    download_configs = [
-        {
-            'url': 'https://climate-laws.org/legislation_and_policies.csv',
-            'filename': 'lse_climate_laws.csv',
-            'description': 'LSE Climate Laws Database'
-        }
-    ]
+    # Show LSE access instructions first
+    print_lse_access_instructions()
     
-    print(f"\n🚀 Starting download of {len(download_configs)} database(s)...")
+    # Check for alternative databases
+    alternative_dbs = get_alternative_climate_databases()
+    active_alternatives = [db for db in alternative_dbs if db.get('active', True)]
     
-    for index, config in enumerate(download_configs):
-        print(f"\n📋 Processing {index + 1}/{len(download_configs)}: {config['description']}")
+    if active_alternatives:
+        print(f"\n🔄 ALTERNATIVE CLIMATE DATABASES")
+        print("=" * 60)
+        print(f"Found {len(active_alternatives)} alternative database(s) with direct access:")
         
-        try:
-            # Create full output path
-            output_path = output_dir / config['filename']
+        for index, config in enumerate(active_alternatives):
+            print(f"\n📋 Processing {index + 1}/{len(active_alternatives)}: {config['description']}")
             
-            # Download the file
-            success = download_source(config['url'], output_path)
-            
-            if success:
-                # Verify file was created and has content
-                if output_path.exists() and output_path.stat().st_size > 0:
-                    print(f"✅ Verified: {config['filename']} ({output_path.stat().st_size:,} bytes)")
-                else:
-                    print(f"⚠️  Warning: File appears empty or missing: {config['filename']}")
-                    failed_count += 1
-            
-        except Exception as e:
-            print(f"❌ Critical error processing {config['description']}: {e}")
-            continue
+            try:
+                # Create full output path
+                output_path = output_dir / config['filename']
+                
+                # Download the file
+                success = download_source(config['url'], output_path)
+                
+                if success:
+                    # Verify file was created and has content
+                    if output_path.exists() and output_path.stat().st_size > 0:
+                        print(f"✅ Verified: {config['filename']} ({output_path.stat().st_size:,} bytes)")
+                    else:
+                        print(f"⚠️  Warning: File appears empty or missing: {config['filename']}")
+                        failed_count += 1
+                
+            except Exception as e:
+                print(f"❌ Critical error processing {config['description']}: {e}")
+                continue
+    else:
+        print(f"\n⚠️  No alternative databases currently available for direct download.")
+        print(f"📝 Please use the LSE form-based access method above.")
     
     # Final summary
-    print(f"\n🎉 Download process completed!")
-    print(f"📊 Final Statistics:")
-    print(f"   ✅ Successfully downloaded: {downloaded_count} files")
-    print(f"   ❌ Failed downloads: {failed_count} files")
-    print(f"📂 All files saved to: {output_dir.absolute()}")
+    print(f"\n🎉 Process completed!")
+    print(f"📊 Statistics:")
+    if active_alternatives:
+        print(f"   ✅ Successfully downloaded: {downloaded_count} alternative database files")
+        print(f"   ❌ Failed downloads: {failed_count} files")
+    print(f"   � LSE database: Requires form-based access (see instructions above)")
+    print(f"📂 Files saved to: {output_dir.absolute()}")
     
-    if downloaded_count > 0:
-        print(f"\n💡 Next steps:")
-        print(f"   1. Review downloaded CSV files for data quality")
-        print(f"   2. Apply year filtering (>= {MIN_YEAR}) during data processing")
-        print(f"   3. Integrate with main climate policy database")
+    print(f"\n💡 Next steps:")
+    print(f"   1. Submit LSE data request form for comprehensive climate laws database")
+    print(f"   2. Review any downloaded alternative databases")
+    print(f"   3. Apply year filtering (>= {MIN_YEAR}) during data processing")
+    print(f"   4. Integrate with main climate policy crawler results")
+    
+    print(f"\n🔗 Useful links:")
+    print(f"   • LSE Climate Laws: https://climate-laws.org/")
+    print(f"   • Data Request Form: https://form.jotform.com/233131638610347")
+    print(f"   • Contact Support: support@climatepolicyradar.org")
 
 
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print("\n⚠️  Download interrupted by user")
+        print("\n⚠️  Process interrupted by user")
         print(f"📊 Progress so far:")
         print(f"   ✅ Downloaded: {downloaded_count} files")
         print(f"   ❌ Failed: {failed_count} files")

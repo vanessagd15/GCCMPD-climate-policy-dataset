@@ -1,3 +1,24 @@
+"""
+APEP Crawler: Asia Pacific Energy Policy Database Scraper
+
+This script crawls the Asia Pacific Energy Policy (APEP) website to extract energy and climate policy information.
+It automatically detects the number of pages, iterates through each policy entry, and collects details such as:
+- Policy name
+- Year
+- Country
+- Summary/content
+- Scope
+- Document type
+- Economic sector
+- Energy types
+
+Policies from MIN_YEAR onwards are saved to a CSV file in the data_new directory. The crawler includes robust error handling,
+progress tracking, and respects server load with random delays between requests.
+
+Data is saved either in data_new/APEP.csv
+
+"""
+
 import csv
 import requests
 from lxml import etree

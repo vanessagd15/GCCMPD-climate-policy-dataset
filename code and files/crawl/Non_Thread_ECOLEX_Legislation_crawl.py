@@ -16,7 +16,7 @@ REQUEST_DELAY = 1.5
 # Create output directory
 output_dir = Path('../data_new')
 output_dir.mkdir(exist_ok=True)
-output_file = output_dir / 'ECOLEX_Legislation.csv'
+output_file = output_dir / 'ECOLEX_Legislation_NoThreaded.csv'
 
 # Global counters for tracking
 saved_count = 0

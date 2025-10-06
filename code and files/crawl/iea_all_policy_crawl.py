@@ -1,20 +1,36 @@
 import requests
 from lxml import html
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pymongo import MongoClient
 import hashlib
 import pandas as pd
 # from config import iea, policy, all_policy  # Commented out - may not be available
-from pymongo.errors import DuplicateKeyError
-import openpyxl
-from openpyxl import Workbook
 import re
 import os
 import time
 import shutil
 import random
 import csv
-from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+
+# Optional Excel support - handle gracefully if not available
+try:
+    import openpyxl
+    from openpyxl import Workbook
+    from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+    EXCEL_AVAILABLE = True
+except ImportError:
+    print("ℹ️  Excel support not available - using CSV output only")
+    EXCEL_AVAILABLE = False
+
+# Optional MongoDB imports - handle gracefully if not available
+try:
+    from pymongo import MongoClient
+    from pymongo.errors import DuplicateKeyError
+    MONGODB_AVAILABLE = True
+except ImportError:
+    print("ℹ️  MongoDB not available - crawler will work without database storage")
+    MongoClient = None
+    DuplicateKeyError = Exception
+    MONGODB_AVAILABLE = False
 
 # Configuration: Only extract policies from this year onwards
 MIN_YEAR = 2021
@@ -51,10 +67,14 @@ class PoliciesSpider(object):
         }
         # Optional MongoDB connection - handle gracefully if not available
         try:
-            self.client = MongoClient()
-            self.collection = self.client['IEA']['all_policy']
-            self.use_mongodb = True
-            print("✅ MongoDB connection established")
+            if MONGODB_AVAILABLE:
+                self.client = MongoClient()
+                self.collection = self.client['IEA']['all_policy']
+                self.use_mongodb = True
+                print("✅ MongoDB connection established")
+            else:
+                self.use_mongodb = False
+                print("ℹ️  Running without MongoDB - data will be saved to CSV only")
         except Exception as e:
             print(f"⚠️  MongoDB not available: {e}")
             self.use_mongodb = False
@@ -335,7 +355,7 @@ class PoliciesSpider(object):
 
     def save(self, item):
         """Save item to MongoDB if available"""
-        if self.use_mongodb and self.collection:
+        if self.use_mongodb and MONGODB_AVAILABLE and self.collection:
             try:
                 self.collection.insert_one(item)
                 print(f"💾 Saved to MongoDB: {item.get('Policy', 'Unknown')}")
@@ -343,6 +363,9 @@ class PoliciesSpider(object):
                 print(f"⚠️  Duplicate entry in MongoDB: {item.get('Policy', 'Unknown')}")
             except Exception as e:
                 print(f"❌ Error saving to MongoDB: {e}")
+        else:
+            # MongoDB not available - data already saved to CSV
+            pass
 
     def run(self):
         """Main execution method with comprehensive error handling"""

@@ -6,9 +6,9 @@ import shutil
 
 start = time.perf_counter()
 # First: Deep Crawl Data ==> Database.csv
-for db in ['MEE_PRC', 'GOV_PRC', 'CDR_NETS', 'CDR_CCUS', 'CRT', 'ICAP_ETS', 'ECOLEX_Treaty', 'APEP',
-           'ECOLEX_Legislation', 'EEA']:
-    os.system("python /home/zhhuang/climate_policy_paper/code/crawl/{}_crawl.py".format(db))
+#for db in ['MEE_PRC', 'GOV_PRC', 'CDR_NETS', 'CDR_CCUS', 'CRT', 'ICAP_ETS', 'ECOLEX_Treaty', 'APEP',
+#           'ECOLEX_Legislation', 'EEA']:
+#    os.system("python /home/zhhuang/climate_policy_paper/code/crawl/{}_crawl.py".format(db))
 
 # Second: Translate (Run in batches)
 # Cut ECOLEX for Batch translation: ECOLEX_Legislation.csv ==> ECOLEX_Legislation_0~39.csv
