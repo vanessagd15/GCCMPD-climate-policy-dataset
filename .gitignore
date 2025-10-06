@@ -350,7 +350,7 @@ trials/
 !settings_example.*
 
 # For the updated version 
-!data_new
+!data_new/
 
 
 
