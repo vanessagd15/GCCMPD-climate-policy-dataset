@@ -46,8 +46,9 @@ jupyterlab>=4.0.0
 notebook>=7.0.0
 
 # Text Processing and Translation
-googletrans==4.0.0rc1
+
 google-trans-new>=1.1.9
+deep-translator>=1.11.0
 
 # Search and Information Retrieval
 rank-bm25>=0.2.2

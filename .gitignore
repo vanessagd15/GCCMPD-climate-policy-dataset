@@ -10,3 +10,8 @@
 /code and files/iea_cp_cclw_result_test.xlsx
 */model_save/
 /models/
+
+.venv/
+wu_env/
+__pycache__/
+*.pyc
