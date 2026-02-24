@@ -1,3 +1,14 @@
+"""
+IEA Policy Deduplication Script
+================================
+Removes duplicate policies from the IEA (International Energy Agency) dataset
+
+⚠️  UPDATE: Modified input file format and naming
+- Changed to read from: IEA_all_policy.csv (CSV format)
+- Updated to use standard field names for consistency
+- Output: iea_dedup_result.xlsx
+"""
+
 import pandas as pd
 import numpy as np
 import os
@@ -7,12 +18,20 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("iea.xlsx")
+    data = pd.read_csv("policy_db_iea_cp_cclw_update/IEA_all_policy.csv")
     return data
 
 
 def data_process(df):
-    df.fillna('', inplace=True)
+    #df.fillna('', inplace=True)
+    for col in df.select_dtypes(include=["object", "string"]).columns:
+        df[col] = df[col].fillna('')
+    # Force problematic text columns to safe string dtype
+    text_cols = ["Sectors", "Technologies"]
+    
+    for col in text_cols:
+        if col in df.columns:
+            df[col] = df[col].fillna("").astype(str)
     # group by "Country ISO", "Date of decision", "Jurisdiction", "Policy Title"
     # then concat specified field like "Type of policy instrument" to the first data
     second_filter = df.groupby(["Country", "Year", "Jurisdiction", "Policy"])["Topics"].apply(

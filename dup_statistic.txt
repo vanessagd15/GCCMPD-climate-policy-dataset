@@ -1,0 +1,6 @@
+====================Single Database Dedup: iea_dedup.py cp_dedup.py====================
+
+IEA Raw: 3593
+IEA After iea_dedup.py: 3581
+IEA first dup: 12
+
