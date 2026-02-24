@@ -27,7 +27,7 @@ def cut_df(file_name, n, output_dir=None):
 
 
 if __name__ == '__main__':
-    # Run from within data_new directory
+    # Run from within data_new directory with n=2
     import os
     current_dir = os.getcwd()
     data_new_dir = os.path.join(current_dir, 'data_new')
@@ -40,6 +40,7 @@ if __name__ == '__main__':
         input_file = os.path.join('data_new', 'ECOLEX_Legislation.csv')
         output_dir = 'data_new'  # Save in data_new directory
     
-    cut_df(input_file, 40, output_dir)
+    n_chunks = 2  # Split into 2 chunks only
+    cut_df(input_file, n_chunks, output_dir)
     print("🎉 All files created successfully!")
 
