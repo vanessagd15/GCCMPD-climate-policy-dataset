@@ -2,7 +2,7 @@
 ✅ This crawler works well
 Ministry of Ecology and Environment (MEE) - China Climate Policies
 Extracts environmental and climate policies from China's MEE website
-Outputs to: data_new/MEE_PRC_policies.csv
+Outputs to: data_new/MEE_PRC.csv
 MIN_YEAR: 2021 and onwards
 """
 
@@ -12,7 +12,6 @@ from fake_useragent import UserAgent
 from lxml import etree
 import csv
 import os
-from pathlib import Path
 
 # Configuration
 MIN_YEAR = 2021
@@ -21,9 +20,10 @@ RETRY_DELAY = 2
 REQUEST_DELAY = 3  # Increased delay for Chinese government site
 
 # Create output directory
-output_dir = Path('../data_new')
-output_dir.mkdir(exist_ok=True)
-output_file = output_dir / 'MEE_PRC_policies.csv'
+output_dir = os.path.join(os.getcwd(), "data_new")
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+output_file = os.path.join(output_dir, 'MEE_PRC.csv')
 
 # Global counters for tracking
 saved_count = 0
