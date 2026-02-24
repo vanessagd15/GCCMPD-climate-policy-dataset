@@ -3,16 +3,19 @@
 LSE Climate Change Laws Database Access Information
 ==================================================
 
+⚠️  NOTE: This crawler does NOT work automatically
+The LSE CCLW database requires manual download with personal registration.
+
+✅ MANUAL DOWNLOAD COMPLETED:
+   📁 File: data_new/CCLW_document_data_download-2026-02-23.zip
+   📝 Process: 
+      1. Visit form at: https://form.jotform.com/233131638610347
+      2. Fill out with personal details and research purpose
+      3. Download the zip file manually
+      4. Place in data_new directory
+
 IMPORTANT: As of 2025, the LSE Climate Change Laws of the World database 
-no longer provides direct CSV downloads. Access now requires form submission.
-
-Current process:
-1. Visit: https://form.jotform.com/233131638610347
-2. Fill out the data request form
-3. Receive download link via email
-
-This script provides alternative data sources and instructions for accessing 
-the LSE database properly.
+no longer provides direct CSV downloads. Access requires form submission.
 """
 
 import requests

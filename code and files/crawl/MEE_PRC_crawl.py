@@ -1,3 +1,11 @@
+"""
+✅ This crawler works well
+Ministry of Ecology and Environment (MEE) - China Climate Policies
+Extracts environmental and climate policies from China's MEE website
+Outputs to: data_new/MEE_PRC_policies.csv
+MIN_YEAR: 2021 and onwards
+"""
+
 import time
 import requests
 from fake_useragent import UserAgent

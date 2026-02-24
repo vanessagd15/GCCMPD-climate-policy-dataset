@@ -1,3 +1,9 @@
+"""
+✅ This crawler works well
+ICAP Emissions Trading Systems data extraction from icapcarbonaction.com
+Outputs to: data_new/ICAP_ETS.csv
+"""
+
 import time
 import os
 import random
