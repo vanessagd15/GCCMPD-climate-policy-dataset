@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("cp_sector_region_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/cp_sector_region_result.xlsx")
     return data
 
 
 def get_json_data():
-    with open("cp_instrument_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/cp_instrument_dict.json", "r") as f:
         json_data = json.load(f)
     return json_data
 
 
 def save(result):
-    with pd.ExcelWriter('cp_sector_region_instrument_result.xlsx') as writer:
+    with pd.ExcelWriter('policy_db_iea_cp_cclw_update/cp_sector_region_instrument_result.xlsx') as writer:
         result.to_excel(writer, index=False)
 
 
@@ -28,8 +28,8 @@ if __name__ == '__main__':
     map_dict = get_json_data()
     # print(df.info())
 
-    df["Type of policy instrument"].fillna("", inplace=True)
-    df["sector"].fillna("", inplace=True)
+    df["Type of policy instrument"] = df["policy_instrument"].fillna("").astype(str)
+    df["sector"] = df["sector"].fillna("").astype(str)
     df["Type of policy instrument_temp"] = df["Type of policy instrument"].apply(
         lambda x: x.replace(', ', ',').replace(';', ',').split(",") if x else x)
     # print(len({i for j in df["Type of policy instrument_temp"].to_list() for i in j}))

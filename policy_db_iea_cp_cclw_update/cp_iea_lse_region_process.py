@@ -7,39 +7,42 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_cp_data():
-    data = pd.read_excel("cp_sector_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/cp_sector_result.xlsx")
     return data
 
 
 def get_iea_data():
-    data = pd.read_excel("iea_sector_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/iea_sector_result.xlsx")
     return data
 
 
 def get_lse_data():
-    data = pd.read_excel("lse_sector_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/lse_sector_result.xlsx")
     return data
 
-
+## File taken from original Wu et al. code
 def get_country_data():
-    data = pd.read_excel("Countries_Code.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/Countries_Code.xlsx")
     return data
 
-
+## File taken from original Wu et al. code
 def get_region_data():
-    data = pd.read_excel("Region.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/Region.xlsx")
     return data
 
-
+## File taken from original Wu et al. code
 def get_aggregates_data():
-    data = pd.read_excel("Aggregates_Code.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/Aggregates_Code.xlsx")
     return data
 
 
 def iea_region_process():
     # IEA
     iea_df = get_iea_data()
-    iea_df.fillna("", inplace=True)
+    #iea_df.fillna("", inplace=True)
+    # Only fill string columns
+    for col in iea_df.select_dtypes(include=["object", "string"]).columns:
+        iea_df[col] = iea_df[col].fillna("").astype(str)
     iea_country = iea_df["Country"].to_list()
     iea_region_data = []
     for i in iea_country:
@@ -107,8 +110,11 @@ def iea_region_process():
 def cp_region_process():
     # Climate Policy
     cp_df = get_cp_data()
-    cp_df.fillna("", inplace=True)
-    cp_country = cp_df["Country"].to_list()
+    #cp_df.fillna("", inplace=True)
+    # Only fill string columns
+    for col in cp_df.select_dtypes(include=["object", "string"]).columns:
+        cp_df[col] = cp_df[col].fillna("").astype(str)
+    cp_country = cp_df["country"].to_list()
     cp_region_data = []
     for i in cp_country:
         if i in region_list:
@@ -117,7 +123,7 @@ def cp_region_process():
             cp_region_data.append("")
     cp_df["IPCC_Region"] = cp_region_data
 
-    cp_country_iso = cp_df["Country ISO"].tolist()
+    cp_country_iso = cp_df["country_iso"].tolist()
     cp_country_code_dict = {
         country_code[i]:
             [country_s_name[i], country_l_name[i], country_code[i], country_i_group[i], country_region[i]]
@@ -147,8 +153,10 @@ def cp_region_process():
 def lse_region_process():
     # LSE
     lse_df = get_lse_data()
-    lse_df.fillna("", inplace=True)
-    lse_geography = lse_df["Geography"].to_list()
+    # Only fill string columns
+    for col in lse_df.select_dtypes(include=["object", "string"]).columns:
+        lse_df[col] = lse_df[col].fillna("").astype(str)
+    lse_geography = lse_df["Geographies"].to_list()
     lse_region_data = []
     for i in lse_geography:
         if i in region_list:
@@ -157,7 +165,7 @@ def lse_region_process():
             lse_region_data.append("")
     lse_df["IPCC_Region"] = lse_region_data
 
-    lse_geography_iso = lse_df["Geography ISO"].tolist()
+    lse_geography_iso = lse_df["Geography ISOs"].tolist()
     lse_country_code_dict = {
         country_code[i]:
             [country_s_name[i], country_l_name[i], country_code[i], country_i_group[i], country_region[i]]
@@ -199,7 +207,7 @@ def package_data(df, data):
 
 
 def save(df, file_name):
-    with pd.ExcelWriter('{}_sector_region_result.xlsx'.format(file_name)) as writer:
+    with pd.ExcelWriter('policy_db_iea_cp_cclw_update/{}_sector_region_result.xlsx'.format(file_name)) as writer:
         df.to_excel(writer, index=False)
 
 
@@ -302,7 +310,8 @@ if __name__ == '__main__':
     region_dict = {j: i["Regions"] for i in region_dict for j in eval(i["Countries"])}
     # Country list
     region_list = list(region_dict.keys())
-    country_df["Income Group"].fillna("", inplace=True)
+    #country_df["Income Group"].fillna("", inplace=True)
+    country_df["Income Group"] = country_df["Income Group"].fillna("").astype(str)
 
     country_s_name = country_df["Short Name"].tolist()
     country_l_name = country_df["Long Name"].tolist()

@@ -7,39 +7,42 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_cp_data():
-    df = pd.read_excel("cp_sector_region_instrument_result.xlsx")
+    df = pd.read_excel("policy_db_iea_cp_cclw_update/cp_sector_region_instrument_result.xlsx")
     return df
 
 
 def get_iea_data():
-    df = pd.read_excel("iea_sector_region_instrument_result.xlsx")
+    df = pd.read_excel("policy_db_iea_cp_cclw_update/iea_sector_region_instrument_result.xlsx")
     return df
 
 
 def get_lse_data():
-    df = pd.read_excel("lse_sector_region_instrument_result.xlsx")
+    df = pd.read_excel("policy_db_iea_cp_cclw_update/lse_sector_region_instrument_result.xlsx")
     return df
 
-
+## Fill taken from original
 def get_country_data():
-    df = pd.read_excel("Countries_Code.xlsx")
+    df = pd.read_excel("policy_db_iea_cp_cclw_update/Countries_Code.xlsx")
     return df
 
-
+## File taken from original.
 def get_annex_data():
-    df = pd.read_excel("Annex.xlsx")
+    df = pd.read_excel("policy_db_iea_cp_cclw_update/Annex.xlsx")
     return df
 
 
 def save(df, file_name):
-    with pd.ExcelWriter('{}_sector_region_instrument_annex_result.xlsx'.format(file_name)) as writer:
+    with pd.ExcelWriter('policy_db_iea_cp_cclw_update/{}_sector_region_instrument_annex_result.xlsx'.format(file_name)) as writer:
         df.to_excel(writer, index=False)
 
 
 def iea_annex_process():
     # IEA
     iea_df = get_iea_data()
-    iea_df.fillna("", inplace=True)
+    #iea_df.fillna("", inplace=True)
+    # Normalize text columns only
+    for col in iea_df.select_dtypes(include=["object", "string"]).columns:
+        iea_df[col] = iea_df[col].fillna("").astype(str)
     iea_annex = []
     for num, row in iea_df.iterrows():
         if row["ISO_code"] in annex_1_iso_list:
@@ -53,7 +56,9 @@ def iea_annex_process():
 def cp_annex_process():
     # Climate Policy
     cp_df = get_cp_data()
-    cp_df.fillna("", inplace=True)
+    # Normalize text columns only
+    for col in cp_df.select_dtypes(include=["object", "string"]).columns:
+        cp_df[col] = cp_df[col].fillna("").astype(str)
     cp_annex = []
     for num, row in cp_df.iterrows():
         if row["ISO_code"] in annex_1_iso_list:
@@ -67,7 +72,9 @@ def cp_annex_process():
 def lse_annex_process():
     # LSE
     lse_df = get_lse_data()
-    lse_df.fillna("", inplace=True)
+    # Normalize text columns only
+    for col in lse_df.select_dtypes(include=["object", "string"]).columns:
+        lse_df[col] = lse_df[col].fillna("").astype(str)
     lse_annex = []
     for num, row in lse_df.iterrows():
         if row["ISO_code"] in annex_1_iso_list:
@@ -109,7 +116,7 @@ if __name__ == '__main__':
         else:
             annex_data.append("")
     annex_df["ISO"] = annex_data
-    annex_df.to_excel("Annex.xlsx", index=False)
+    annex_df.to_excel("policy_db_iea_cp_cclw_update/Annex.xlsx", index=False)
 
     annex_1_iso_list = annex_df["ISO"].to_list()
 

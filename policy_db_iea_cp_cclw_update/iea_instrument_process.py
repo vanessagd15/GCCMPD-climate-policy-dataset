@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("iea_sector_region_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/iea_sector_region_result.xlsx")
     return data
 
 
 def get_json_data():
-    with open("iea_instrument_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/iea_instrument_dict.json", "r") as f:
         json_data = json.load(f)
     return json_data
 
 
 def save(result):
-    with pd.ExcelWriter('iea_sector_region_instrument_result.xlsx') as writer:
+    with pd.ExcelWriter('policy_db_iea_cp_cclw_update/iea_sector_region_instrument_result.xlsx') as writer:
         result.to_excel(writer, index=False)
 
 
@@ -28,8 +28,8 @@ if __name__ == '__main__':
     map_dict = get_json_data()
 
     # print(df.info())
-    df["Type"].fillna("", inplace=True)
-    df["sector"].fillna("", inplace=True)
+    df["Type"] = df["Type"].fillna("").astype(str)
+    df["sector"] = df["sector"].fillna("").astype(str)
     df["Type"] = df["Type"].apply(lambda x: x.split(";") if x else x)
 
     instrument = []
