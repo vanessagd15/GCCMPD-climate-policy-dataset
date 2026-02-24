@@ -68,9 +68,9 @@ def data_process(df):
     result_filter = pd.merge(second_filter, fourth_filter,
                              on=["Country", "Year", "Jurisdiction", "Policy"])
 
-    result_filter.to_excel('iea_dedup_result.xlsx', index=False)
+    result_filter.to_excel('policy_db_iea_cp_cclw_update/iea_dedup_result.xlsx', index=False)
 
-    with open("dup_statistic.txt", 'w') as f:
+    with open("policy_db_iea_cp_cclw_update/dup_statistic.txt", 'w') as f:
         f.write("====================Single Database Dedup: iea_dedup.py cp_dedup.py====================" + '\n')
         f.write('\n')
         f.write("IEA Raw: " + str(len(df)) + '\n')

@@ -7,62 +7,76 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_csv("cp.csv")
+    #data = pd.read_csv("cp.csv")
+    data = pd.read_csv("policy_db_iea_cp_cclw_update/climate_policy_database_policies.csv")
     return data
 
 
 def data_process(df):
-    df["Date of decision"].fillna(0, inplace=True)
-    df["Start date of implementation"].fillna(0, inplace=True)
-    df.fillna('', inplace=True)
-    date_list = [''] * len(df["Date of decision"].to_list())
+    #df.columns = df.columns.str.strip()
+    #df.columns = df.columns.str.lower()
+    #df["Date of decision"].fillna(0, inplace=True)
+    #df["Date of decision"].fillna(0, inplace=True)
+    if "decision_date" in df.columns:
+        df["decision_date"] = df["decision_date"].fillna(0)
+
+    #df["start_date"].fillna(0, inplace=True)
+    if "start_date" in df.columns:
+        df["start_date"] = df["start_date"].fillna(0)
+
+    #df.fillna('', inplace=True)
+    # Only fill text columns
+    for col in df.select_dtypes(include=["object", "string"]).columns:
+        df[col] = df[col].fillna("").astype(str)
+
+    date_list = [''] * len(df["decision_date"].to_list())
     for num, row in df.iterrows():
-        if row["Date of decision"]:
-            date_list[num] = row["Date of decision"]
+        if row["decision_date"]:
+            date_list[num] = row["decision_date"]
         else:
-            date_list[num] = row["Start date of implementation"]
-    df["Date of decision"] = date_list
-    # group by "Country ISO", "Date of decision", "Jurisdiction", "Policy name" 
-    # then concat specified field like "Type of policy instrument" to the first data
+            date_list[num] = row["start_date"]
+    df["decision_date"] = date_list
+    # group by "Country ISO", "Date of decision", "jurisdiction", "policy_name" 
+    # then concat specified field like "policy_instrument" to the first data
     second_filter = \
-        df.groupby(["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])[
-            "Type of policy instrument"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
+        df.groupby(["country_iso", "decision_date", "jurisdiction", "policy_name"])[
+            "policy_instrument"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
     second_filter_2 = \
-        df.groupby(["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])[
-            "Sector name"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
+        df.groupby(["country_iso", "decision_date", "jurisdiction", "policy_name"])[
+            "sector"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
     second_filter_3 = \
-        df.groupby(["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])[
-            "Policy description"].apply(lambda x: "\n".join(set(x.str.cat(sep="¥¥").split("¥¥")))).reset_index()
+        df.groupby(["country_iso", "decision_date", "jurisdiction", "policy_name"])[
+            "policy_description"].apply(lambda x: "\n".join(set(x.str.cat(sep="¥¥").split("¥¥")))).reset_index()
     second_filter_4 = \
-        df.groupby(["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])[
-            "Policy type"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
+        df.groupby(["country_iso", "decision_date", "jurisdiction", "policy_name"])[
+            "policy_type"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
     second_filter_5 = \
-        df.groupby(["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])[
-            "Policy objective"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
-    # second_filter_6 = df.groupby(["Country ISO", "Date of decision", "Jurisdiction"])[
-    #     "Policy name"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
-    second_filter["Sector name"] = second_filter_2["Sector name"]
-    second_filter["Policy description"] = second_filter_3["Policy description"]
-    second_filter["Policy type"] = second_filter_4["Policy type"]
-    second_filter["Policy objective"] = second_filter_5["Policy objective"]
-    # second_filter["Policy name"] = second_filter_6["Policy name"]
+        df.groupby(["country_iso", "decision_date", "jurisdiction", "policy_name"])[
+            "policy_objective"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
+    # second_filter_6 = df.groupby(["Country ISO", "decision_date", "jurisdiction"])[
+    #     "policy_name"].apply(lambda x: ";".join(set(x.str.cat(sep=";").split(";")))).reset_index()
+    second_filter["sector"] = second_filter_2["sector"]
+    second_filter["policy_description"] = second_filter_3["policy_description"]
+    second_filter["policy_type"] = second_filter_4["policy_type"]
+    second_filter["policy_objective"] = second_filter_5["policy_objective"]
+    # second_filter["policy_name"] = second_filter_6["policy_name"]
     # print(df.info())
 
-    # drop_duplicates by "Country ISO", "Date of decision", "Jurisdiction", "Policy name"
+    # drop_duplicates by "Country ISO", "Date of decision", "jurisdiction", "policy_name"
     third_filter = df.drop_duplicates(
-        subset=["Country ISO", "Date of decision", "Jurisdiction", "Policy name"],
+        subset=["country_iso", "decision_date", "jurisdiction", "policy_name"],
         keep="first")
 
     fourth_filter = third_filter.drop(
-        ["Type of policy instrument", "Sector name", "Policy description", "Policy type", "Policy objective"], axis=1)
+        ["policy_instrument", "sector", "policy_description", "policy_type", "policy_objective"], axis=1)
 
-    # merge by "Country ISO", "Date of decision", "Jurisdiction", "Policy name"
+    # merge by "Country ISO", "Date of decision", "jurisdiction", "policy_name"
     result_filter = pd.merge(second_filter, fourth_filter,
-                             on=["Country ISO", "Date of decision", "Jurisdiction", "Policy name"])
+                             on=["country_iso", "decision_date", "jurisdiction", "policy_name"])
+    
+    result_filter.to_excel('policy_db_iea_cp_cclw_update/cp_dedup_result.xlsx', index=False)
 
-    result_filter.to_excel('cp_dedup_result.xlsx', index=False)
-
-    with open("dup_statistic.txt", 'a') as f:
+    with open("policy_db_iea_cp_cclw_update/dup_statistic.txt", 'a') as f:
         f.write("Climate Policy Raw: " + str(len(df)) + '\n')
         f.write("Climate Policy After cp_dedup.py: " + str(len(result_filter)) + '\n')
         f.write("Climate Policy first dup: " + str(len(df) - len(result_filter)) + '\n')

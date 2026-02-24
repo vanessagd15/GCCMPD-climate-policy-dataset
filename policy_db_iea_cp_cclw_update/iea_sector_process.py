@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("iea_dedup_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/iea_dedup_result.xlsx")
     return data
 
 
 def get_dict():
-    with open("iea_sector_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/iea_sector_dict.json", "r") as f:
         map_dict = json.load(f)
     return map_dict
 
 
 def save(result):
-    with pd.ExcelWriter('iea_sector_result.xlsx') as writer:
+    with pd.ExcelWriter('policy_db_iea_cp_cclw_update/iea_sector_result.xlsx') as writer:
         result.to_excel(writer, index=False)
 
 
@@ -28,7 +28,8 @@ if __name__ == '__main__':
     iea_sector_dict = get_dict()
 
     df["Sectors temp"] = df["Sectors"]
-    df["Sectors temp"].fillna("", inplace=True)
+    #df["Sectors temp"].fillna("", inplace=True)
+    df["Sectors temp"] = df["Sectors temp"].fillna("").astype(str)
 
     # Sectors split by ";"
     df["Sectors temp"] = df["Sectors temp"].apply(lambda x: x.strip().split(";") if x else x)
