@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("cp_sector_region_instrument_annex_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/cp_sector_region_instrument_annex_result.xlsx")
     return data
 
 
 def get_dict():
-    with open("cp_objective_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/cp_objective_dict.json", "r") as f:
         json_dict = json.load(f)
     return json_dict
 
 
 def save(result):
-    with pd.ExcelWriter("cp_sector_region_instrument_annex_objective_result.xlsx") as writer:
+    with pd.ExcelWriter("policy_db_iea_cp_cclw_update/cp_sector_region_instrument_annex_objective_result.xlsx") as writer:
         result.to_excel(writer, index=False)
 
 
@@ -27,8 +27,8 @@ if __name__ == '__main__':
     df = get_data()
     map_dict = get_dict()
 
-    df["Policy objective temp"] = df["Policy objective"]
-    df["Policy objective temp"].fillna("", inplace=True)
+    df["Policy objective temp"] = df["policy_objective"]
+    df["Policy objective temp"] = df["Policy objective temp"].fillna("").astype(str)
 
     df["Policy objective temp"] = df["Policy objective temp"].apply(
         lambda x: x.replace(', ', ',').replace(';', ',').strip().split(',') if len(x) > 0 else x)

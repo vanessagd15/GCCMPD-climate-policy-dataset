@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("iea_sector_region_instrument_annex_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/iea_sector_region_instrument_annex_result.xlsx")
     return data
 
 
 def get_dict():
-    with open("iea_objective_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/iea_objective_dict.json", "r") as f:
         json_dict = json.load(f)
     return json_dict
 
 
 def save(result):
-    with pd.ExcelWriter("iea_sector_region_instrument_annex_objective_result.xlsx") as writer:
+    with pd.ExcelWriter("policy_db_iea_cp_cclw_update/iea_sector_region_instrument_annex_objective_result.xlsx") as writer:
         result.to_excel(writer, index=False)
 
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     df = get_data()
     map_dict = get_dict()
 
-    df["Topics"].fillna("", inplace=True)
+    df["Topics"] = df["Topics"].fillna("").astype(str)
     df["Topics"] = df["Topics"].apply(lambda x: x.strip().split(";") if x else x)
     # print(df["Topics"])
     # print(df.info())

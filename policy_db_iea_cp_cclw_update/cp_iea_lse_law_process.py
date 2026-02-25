@@ -9,39 +9,72 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_dict():
-    with open("law_soft_law_strategy_title_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/law_soft_law_strategy_title_dict.json", "r") as f:
         map_title_dict = json.load(f)
-    with open("law_soft_law_strategy_content_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/law_soft_law_strategy_content_dict.json", "r") as f:
         map_content_dict = json.load(f)
     return map_title_dict, map_content_dict
 
 
 def get_cp_data():
-    cp_df = pd.read_excel("cp_sector_region_instrument_annex_objective_result.xlsx")
+    cp_df = pd.read_excel("policy_db_iea_cp_cclw_update/cp_sector_region_instrument_annex_objective_result.xlsx")
     return cp_df
 
 
 def get_iea_data():
-    iea_df = pd.read_excel("iea_sector_region_instrument_annex_objective_result.xlsx")
+    iea_df = pd.read_excel("policy_db_iea_cp_cclw_update/iea_sector_region_instrument_annex_objective_result.xlsx")
     return iea_df
 
 
 def get_lse_data():
-    lse_df = pd.read_excel("lse_sector_region_instrument_annex_objective_result.xlsx")
+    lse_df = pd.read_excel("policy_db_iea_cp_cclw_update/lse_sector_region_instrument_annex_objective_result.xlsx")
     return lse_df
 
 
 def save(df, db):
-    with pd.ExcelWriter("{}_sector_region_instrument_annex_objective_law_result.xlsx".format(db)) as writer:
+    with pd.ExcelWriter("policy_db_iea_cp_cclw_update/{}_sector_region_instrument_annex_objective_law_result.xlsx".format(db)) as writer:
         df.to_excel(writer, index=False)
+
+rename_dict = {
+    "country_iso": "Country ISO",
+    "decision_date": "Date of decision",
+    "jurisdiction": "Jurisdiction",
+    "policy_name": "Policy name",
+    "policy_instrument": "Type of policy instrument",
+    "sector": "Sector name",
+    "policy_description": "Policy description",
+    "policy_type": "Policy type",
+    "policy_objective": "Policy objective",
+    "policy_id": "Policy ID",
+    "policy_title": "Policy Title",
+    "supranational_region": "Supranational region",
+    "country": "Country",
+    "subnational_region": "Subnational region or state",
+    "policy_city_or_local": "City or local",
+    "stringency": "Policy stringency",
+    "policy_status": "Implementation state",
+    "start_date": "Start date of implementation",
+    "end_date": "End date of implementation",
+    "high_impact": "High impact",
+    "reference": "Source or references",
+    "last_update": "Last update",
+    "impact_indicators.comments": "Impact indicators: comments",
+    "impact_indicators.name": "Impact indicators: name",
+    "impact_indicators.value": "Impact indicators: value",
+    "impact_indicators.base_year": "Impact indicators: base year",
+    "impact_indicators.target_year": "Impact indicators: target year",
+}
 
 
 def lse_law_process(soft_hard_law_title_dict, soft_hard_law_content_dict):
     lse_df = get_lse_data()
-    lse_df["Title"].fillna("", inplace=True)
-    lse_df["Description"].fillna("", inplace=True)
-    lse_df["Type"].fillna("", inplace=True)
-    lse_df["Document Types"].fillna("", inplace=True)
+    lse_df.rename(columns={"Document Title":"Title", "Family Summary":"Description",
+                           "Document Type":"Document Types", 
+                           "Category":"Type"}, inplace=True)
+    lse_df["Title"] = lse_df["Title"].fillna("").astype(str)
+    lse_df["Description"] = lse_df["Description"].fillna("").astype(str)
+    lse_df["Type"] = lse_df["Type"].fillna("").astype(str)
+    lse_df["Document Types"] = lse_df["Document Types"].fillna("").astype(str)
 
     lse_df["Policy Type"] = lse_df["Type"]
     law_strategy_list = ["Other Strategy Plan or Target"] * len(lse_df["Title"].to_list())
@@ -294,9 +327,9 @@ def lse_law_process(soft_hard_law_title_dict, soft_hard_law_content_dict):
 
 def iea_law_process(soft_hard_law_title_dict, soft_hard_law_content_dict):
     iea_df = get_iea_data()
-    iea_df["Policy"].fillna("", inplace=True)
-    iea_df["Policy_Content"].fillna("", inplace=True)
-    iea_df["Type"].fillna("", inplace=True)
+    iea_df["Policy"] = iea_df["Policy"].fillna("").astype(str)
+    iea_df["Policy_Content"] = iea_df["Policy_Content"].fillna("").astype(str)
+    iea_df["Type"] = iea_df["Type"].fillna("").astype(str)
     law_strategy_list = ["Other Strategy Plan or Target"] * len(iea_df["Policy"].to_list())
     policy_type_list = ["executive"] * len(iea_df["Policy"].to_list())
 
@@ -664,9 +697,10 @@ def iea_law_process(soft_hard_law_title_dict, soft_hard_law_content_dict):
 
 def cp_law_process(soft_hard_law_title_dict, soft_hard_law_content_dict):
     cp_df = get_cp_data()
-    cp_df["Policy name"].fillna("", inplace=True)
-    cp_df["Policy description"].fillna("", inplace=True)
-    cp_df["Type of policy instrument"].fillna("", inplace=True)
+    cp_df.rename(columns=rename_dict, inplace=True)
+    cp_df["Policy name"] = cp_df["Policy name"].fillna("").astype(str)
+    cp_df["Policy description"] = cp_df["Policy description"].fillna("").astype(str)
+    cp_df["Type of policy instrument"] = cp_df["Type of policy instrument"].fillna("").astype(str)
     law_strategy_list = ["Other Strategy Plan or Target"] * len(cp_df["Policy Title"].to_list())
     policy_type_list = ["executive"] * len(cp_df["Policy Title"].to_list())
 

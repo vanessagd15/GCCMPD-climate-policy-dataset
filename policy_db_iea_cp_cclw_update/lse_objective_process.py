@@ -8,18 +8,18 @@ print("================== {} ==================".format(os.path.basename(sys.arg
 
 
 def get_data():
-    data = pd.read_excel("lse_sector_region_instrument_annex_result.xlsx")
+    data = pd.read_excel("policy_db_iea_cp_cclw_update/lse_sector_region_instrument_annex_result.xlsx")
     return data
 
 
 def get_dict():
-    with open("lse_objective_dict.json", "r") as f:
+    with open("policy_db_iea_cp_cclw_update/lse_objective_dict.json", "r") as f:
         json_dict = json.load(f)
     return json_dict
 
 
 def save(result):
-    with pd.ExcelWriter("lse_sector_region_instrument_annex_objective_result.xlsx") as writer:
+    with pd.ExcelWriter("policy_db_iea_cp_cclw_update/lse_sector_region_instrument_annex_objective_result.xlsx") as writer:
         result.to_excel(writer, index=False)
 
 
@@ -27,12 +27,12 @@ if __name__ == '__main__':
     df = get_data()
     map_dict = get_dict()
 
-    df["Keywords temp"] = df["Keywords"]
-    df["Keywords temp"].fillna("", inplace=True)
+    df["Keywords temp"] = df["Keyword"]
+    df["Keywords temp"] = df["Keywords temp"].fillna("").astype(str)
     df["Keywords temp"] = df["Keywords temp"].apply(
         lambda x: x.strip().replace(";  ", ';').replace("; ", ';').split(';') if len(x) > 0 else x)
 
-    df["Sectors"].fillna("", inplace=True)
+    df["Sectors"] = df["Sectors"].fillna("").astype(str)
     df["Sectors"] = df["Sectors"].apply(lambda x: x.strip().split(";") if len(x) > 0 else x)
 
     objective = []
